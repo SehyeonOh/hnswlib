@@ -25,6 +25,25 @@ install(EXPORT hnswlibTargets
     NAMESPACE hnswlib::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/hnswlib)
 
+# Set C++ standard to 17 for Arrow compatibility
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Find required packages
+find_package(Arrow REQUIRED)
+find_package(Parquet REQUIRED)
+find_package(Threads REQUIRED)
+
+# Add DataToCpp include directory
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/examples/cpp/DataToCpp
+    ${Arrow_INCLUDE_DIRS}
+    ${PARQUET_INCLUDE_DIRS}
+)
+
+# Add DataToCpp submodule
+add_subdirectory(examples/cpp/DataToCpp)
+
 # Examples and tests
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     option(HNSWLIB_EXAMPLES "Build examples and tests." ON)
@@ -32,30 +51,29 @@ else()
     option(HNSWLIB_EXAMPLES "Build examples and tests." OFF)
 endif()
 if(HNSWLIB_EXAMPLES)
-    set(CMAKE_CXX_STANDARD 11)
-
+    # Remove existing C++ standard flags from compiler options
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-      SET( CMAKE_CXX_FLAGS  "-Ofast -std=c++11 -DHAVE_CXX0X -openmp -fpic -ftree-vectorize" )
-      check_cxx_compiler_flag("-march=native" COMPILER_SUPPORT_NATIVE_FLAG)
-      if(COMPILER_SUPPORT_NATIVE_FLAG)
-        SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native" )
-        message("set -march=native flag")
-      else()
-        check_cxx_compiler_flag("-mcpu=apple-m1" COMPILER_SUPPORT_M1_FLAG)
-        if(COMPILER_SUPPORT_M1_FLAG)
-          SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mcpu=apple-m1" )
-          message("set -mcpu=apple-m1 flag")
-        endif()
-      endif()
+        SET(CMAKE_CXX_FLAGS "-Ofast -DHAVE_CXX0X -openmp -fpic -ftree-vectorize")
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-      SET( CMAKE_CXX_FLAGS  "-Ofast -lrt -std=c++11 -DHAVE_CXX0X -march=native -fpic -w -fopenmp -ftree-vectorize -ftree-vectorizer-verbose=0" )
+        SET(CMAKE_CXX_FLAGS "-Ofast -lrt -DHAVE_CXX0X -march=native -fpic -w -fopenmp -ftree-vectorize -ftree-vectorizer-verbose=0")
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-      SET( CMAKE_CXX_FLAGS  "/O2 -DHAVE_CXX0X /W1 /openmp /EHsc" )
+        SET(CMAKE_CXX_FLAGS "/O2 -DHAVE_CXX0X /W1 /openmp /EHsc")
     endif()
 
-    # examples
+    # Create examples/cpp directory structure
+    set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/examples/cpp)
+    
     add_executable(example_search examples/cpp/example_search.cpp)
     target_link_libraries(example_search hnswlib)
+
+    add_executable(example_build_and_save examples/cpp/example_build_and_save.cpp)
+    target_link_libraries(example_build_and_save PRIVATE
+        hnswlib
+        arrow
+        parquet
+        Threads::Threads
+        data2cpp
+    )
 
     add_executable(example_epsilon_search examples/cpp/example_epsilon_search.cpp)
     target_link_libraries(example_epsilon_search hnswlib)
@@ -77,6 +95,9 @@ if(HNSWLIB_EXAMPLES)
 
     add_executable(example_mt_replace_deleted examples/cpp/example_mt_replace_deleted.cpp)
     target_link_libraries(example_mt_replace_deleted hnswlib)
+
+    add_executable(example_load_and_search examples/cpp/example_load_and_search.cpp)
+    target_link_libraries(example_load_and_search PRIVATE data2cpp hnswlib)
 
     # tests
     add_executable(multivector_search_test tests/cpp/multivector_search_test.cpp)
