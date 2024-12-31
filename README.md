@@ -351,3 +351,15 @@ HNSW paper:
 ```
 
 The update algorithm supported in this repository is to be published in "Dynamic Updates For HNSW, Hierarchical Navigable Small World Graphs" US Patent 15/929,802 by Apoorv Sharma, Abhishek Tayal and Yury Malkov.
+
+## Example Scripts Overview
+
+### example_build_and_save
+- Loads data from Parquet files to build HNSW index
+- Saves the constructed index as a binary file
+- Stores Ground Truth data in binary format
+
+### example_load_and_search  
+- Loads the saved HNSW index
+- Performs search using query data from Parquet files
+- Enables accuracy verification by comparing results with stored binary Ground Truth

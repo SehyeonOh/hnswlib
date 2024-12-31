@@ -8,9 +8,9 @@
 #include <mutex>
 
 int main(int argc, char** argv) {
-    if (argc != 8) {
+    if (argc != 9) {
         std::cout << "Usage: " << argv[0] 
-                  << " <query_parquet> <column_name> <groundtruth_bin> <gt_count_per_query> <index_path> <ef_search> <num_threads>" 
+                  << " <query_parquet> <column_name> <groundtruth_bin> <gt_count_per_query> <index_path> <k> <ef_search> <num_threads>" 
                   << std::endl;
         return 1;
     }
@@ -22,8 +22,9 @@ int main(int argc, char** argv) {
         std::string gt_path = argv[3];
         size_t gt_count_per_query = std::stoi(argv[4]);
         std::string index_path = argv[5];
-        size_t ef_search = std::stoi(argv[6]);
-        int num_threads = std::stoi(argv[7]);
+        size_t k = std::stoi(argv[6]);
+        size_t ef_search = std::stoi(argv[7]);
+        int num_threads = std::stoi(argv[8]);
 
         // Use system's thread count if num_threads is 0
         if (num_threads <= 0) {
@@ -31,7 +32,9 @@ int main(int argc, char** argv) {
         }
 
         // Load query vectors from parquet
-        data2cpp::Parquet2Cpp query_data(query_path, "vector");
+        std::vector<std::string> query_paths;
+        query_paths.push_back(query_path);
+        data2cpp::Parquet2Cpp query_data(query_paths, column_name);
         const size_t dim = query_data.GetWidth();
         const size_t num_queries = query_data.GetRowCount();
 
@@ -44,7 +47,6 @@ int main(int argc, char** argv) {
         alg_hnsw->setEf(ef_search);
 
         // Prepare result storage
-        const size_t k = 1;  // top-1 search
         std::vector<std::vector<size_t>> results(num_queries, std::vector<size_t>(k));
         
         // Distribute search tasks among threads
@@ -59,7 +61,7 @@ int main(int argc, char** argv) {
                     if (query_idx >= num_queries) break;
 
                     // Search for current query
-                    const float* query_vector = reinterpret_cast<const float*>(query_data.GetRawData(query_idx));
+                    const float* query_vector = query_data.GetFloatData(query_idx);
                     result_queues[query_idx] = alg_hnsw->searchKnn(query_vector, k);
                 }
             });
@@ -82,7 +84,7 @@ int main(int argc, char** argv) {
         // Compare with groundtruth and calculate recall
         size_t correct_count = 0;
         for (size_t i = 0; i < num_queries; i++) {
-            const int32_t* gt = reinterpret_cast<const int32_t*>(gt_data.GetRawData(i));
+            const uint64_t* gt = reinterpret_cast<const uint64_t*>(gt_data.GetRawData(i));
             for (size_t j = 0; j < k; j++) {
                 // Check if results[i][j] exists in first k elements of groundtruth
                 for (size_t g = 0; g < k; g++) {
