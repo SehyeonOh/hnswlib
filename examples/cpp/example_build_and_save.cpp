@@ -94,6 +94,11 @@ int main(int argc, char** argv) {
                   << "- M: " << M << std::endl
                   << "- ef_construction: " << ef_construction << std::endl
                   << "- Threads used: " << num_threads << std::endl
+                  << "- Distance calculations: " << hnswlib::dist_calculations << std::endl
+                  << "- Distance calculations per element: " << hnswlib::dist_calculations / max_elements << std::endl
+                  << "- Hops: " << hnswlib::hops << std::endl
+                  << "- Hops per element: " << hnswlib::hops / max_elements << std::endl
+
                   << "Index saved to: " << save_path << std::endl;
 
     } catch (const std::exception& e) {

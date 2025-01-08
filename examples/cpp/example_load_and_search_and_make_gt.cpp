@@ -187,7 +187,11 @@ int main(int argc, char** argv) {
                   << "- ef_search: " << ef_search << std::endl
                   << "- k: " << k << std::endl
                   << "- Threads used: " << num_threads << std::endl
-                  << "- Recall@" << k << ": " << recall << std::endl;
+                  << "- Recall@" << k << ": " << recall << std::endl
+                  << "- Distance calculations: " << hnswlib::dist_calculations << std::endl
+                  << "- Distance calculations per query: " << hnswlib::dist_calculations / num_queries << std::endl
+                  << "- Hops: " << hnswlib::hops << std::endl
+                  << "- Hops per query: " << hnswlib::hops / num_queries << std::endl;
 
         delete alg_hnsw;
 
