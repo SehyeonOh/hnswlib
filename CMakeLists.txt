@@ -75,6 +75,21 @@ if(HNSWLIB_EXAMPLES)
         data2cpp
     )
 
+    add_executable(example_partial_build_and_save examples/cpp/example_partial_build_and_save.cpp)
+    target_link_libraries(example_partial_build_and_save PRIVATE
+        hnswlib
+        arrow
+        parquet
+        Threads::Threads
+        data2cpp
+    )
+
+    add_executable(example_load_and_search examples/cpp/example_load_and_search.cpp)
+    target_link_libraries(example_load_and_search PRIVATE data2cpp hnswlib)
+
+    add_executable(example_load_and_search_and_make_gt examples/cpp/example_load_and_search_and_make_gt.cpp)
+    target_link_libraries(example_load_and_search_and_make_gt PRIVATE data2cpp hnswlib)
+
     add_executable(example_epsilon_search examples/cpp/example_epsilon_search.cpp)
     target_link_libraries(example_epsilon_search hnswlib)
 
@@ -95,9 +110,6 @@ if(HNSWLIB_EXAMPLES)
 
     add_executable(example_mt_replace_deleted examples/cpp/example_mt_replace_deleted.cpp)
     target_link_libraries(example_mt_replace_deleted hnswlib)
-
-    add_executable(example_load_and_search examples/cpp/example_load_and_search.cpp)
-    target_link_libraries(example_load_and_search PRIVATE data2cpp hnswlib)
 
     # tests
     add_executable(multivector_search_test tests/cpp/multivector_search_test.cpp)
