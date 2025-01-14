@@ -66,14 +66,24 @@ if(HNSWLIB_EXAMPLES)
     add_executable(example_search examples/cpp/example_search.cpp)
     target_link_libraries(example_search hnswlib)
 
-    add_executable(example_build_and_save examples/cpp/example_build_and_save.cpp)
-    target_link_libraries(example_build_and_save PRIVATE
+    add_executable(example_build_and_save_from_parquet examples/cpp/example_build_and_save_from_parquet.cpp)
+    target_link_libraries(example_build_and_save_from_parquet PRIVATE
         hnswlib
         arrow
         parquet
         Threads::Threads
         data2cpp
     )
+
+    add_executable(example_build_and_save_from_fvecs examples/cpp/example_build_and_save_from_fvecs.cpp)
+    target_link_libraries(example_build_and_save_from_fvecs PRIVATE
+        hnswlib
+        arrow
+        parquet
+        Threads::Threads
+        data2cpp
+    )
+
 
     add_executable(example_partial_build_and_save examples/cpp/example_partial_build_and_save.cpp)
     target_link_libraries(example_partial_build_and_save PRIVATE
@@ -86,6 +96,9 @@ if(HNSWLIB_EXAMPLES)
 
     add_executable(example_load_and_search examples/cpp/example_load_and_search.cpp)
     target_link_libraries(example_load_and_search PRIVATE data2cpp hnswlib)
+
+    add_executable(example_load_and_search_from_vecs examples/cpp/example_load_and_search_from_vecs.cpp)
+    target_link_libraries(example_load_and_search_from_vecs PRIVATE data2cpp hnswlib)
 
     add_executable(example_load_and_search_and_make_gt examples/cpp/example_load_and_search_and_make_gt.cpp)
     target_link_libraries(example_load_and_search_and_make_gt PRIVATE data2cpp hnswlib)
